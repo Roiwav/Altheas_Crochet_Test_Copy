@@ -1,24 +1,25 @@
+// src/components/layout/Navbar.jsx
 import { useState, useEffect, useRef } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useUser } from "../../context/useUser";
 import { useDarkMode } from "../../context/DarkModeContext.jsx";
-import { useCart } from "../../context/CartContext";
-import { ShoppingCart, User, LogOut, Menu, X, Moon, Sun } from "lucide-react";
+import { useCart } from "../../context/CartContext.jsx";
+import { ShoppingCart, User, Menu, X, Moon, Sun } from "lucide-react";
 
 export default function Navbar({ sidebarOpen, setSidebarOpen }) {
   const { user, isAuthenticated, logout } = useUser();
   const { darkMode, toggleDarkMode } = useDarkMode();
-  const { cart } = useCart(); // ✅ cart comes from context
+  const { cartItems } = useCart(); // ✅ get cartItems from context
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const dropdownRef = useRef(null);
   const navigate = useNavigate();
   const location = useLocation();
 
-  // ✅ Calculate total quantity in cart (safe reduce)
-const totalQuantity = Array.isArray(cart)
-  ? cart.reduce((sum, item) => sum + item.quantity, 0)
-  : 0;
+  // ✅ Calculate total quantity in cart
+  const totalQuantity = Array.isArray(cartItems)
+    ? cartItems.reduce((sum, item) => sum + item.qty, 0)
+    : 0;
 
   // Close dropdown when clicking outside
   useEffect(() => {
