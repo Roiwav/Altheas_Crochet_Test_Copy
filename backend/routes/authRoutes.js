@@ -43,7 +43,7 @@ router.post("/register", async (req, res) => {
     res.status(201).json({
       message: "User registered successfully",
       token,
-      user: { id: user._id, fullName: user.fullName, email: user.email },
+      user: { id: user._id, fullName: user.fullName, email: user.email, username: user.username, avatar: user.avatar || "" },
     });
   } catch (err) {
     console.error("Register error:", err);
@@ -63,21 +63,36 @@ router.post("/register", async (req, res) => {
 // =============================
 router.post("/login", async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { email, username, identifier, password } = req.body;
 
-    if (!email || !password) {
-      return res.status(400).json({ message: "Email and password are required" });
+    if (!password) {
+      return res.status(400).json({ message: "Email/Username and password are required" });
     }
 
-    const user = await User.findOne({ email: email.trim().toLowerCase() });
+    // Determine login identifier
+    let loginId = (email || identifier || username || "").trim();
+    if (!loginId) {
+      return res.status(400).json({ message: "Email/Username and password are required" });
+    }
+
+    // Normalize email to lowercase when it looks like an email
+    const looksLikeEmail = loginId.includes("@");
+    if (looksLikeEmail) loginId = loginId.toLowerCase();
+
+    // Find by email or username depending on the identifier
+    const query = looksLikeEmail
+      ? { email: loginId }
+      : { username: loginId };
+
+    const user = await User.findOne(query);
     if (!user) {
-      return res.status(400).json({ message: "Invalid email or password" });
+      return res.status(400).json({ message: "Invalid email/username or password" });
     }
 
     // Compare password using schema method
     const isMatch = await user.matchPassword(password);
     if (!isMatch) {
-      return res.status(400).json({ message: "Invalid email or password" });
+      return res.status(400).json({ message: "Invalid email/username or password" });
     }
 
     // Generate JWT token
@@ -87,7 +102,7 @@ router.post("/login", async (req, res) => {
 
     res.json({
       token,
-      user: { id: user._id, fullName: user.fullName, email: user.email },
+      user: { id: user._id, fullName: user.fullName, email: user.email, username: user.username, avatar: user.avatar || "" },
     });
   } catch (err) {
     console.error("Login error:", err);

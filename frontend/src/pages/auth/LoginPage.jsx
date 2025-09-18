@@ -4,8 +4,10 @@ import { Link, useNavigate, useLocation, useSearchParams } from "react-router-do
 import { Eye, EyeOff, Loader2, Lock, Mail, ArrowRight } from "lucide-react";
 import { useUser } from "../../context/useUser";
 import { toast } from "react-toastify";
+import useBubbles from "../../hooks/useBubbles";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5001/api/v1";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5001";
 
 export default function LoginPage() {
   const { login } = useUser();
@@ -14,7 +16,7 @@ export default function LoginPage() {
   const [searchParams] = useSearchParams();
 
   const [showPassword, setShowPassword] = useState(false);
-  const [formData, setFormData] = useState({ email: "", password: "" });
+  const [formData, setFormData] = useState({ identifier: "", password: "" });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [rememberMe, setRememberMe] = useState(true); // ✅ default true for persistence
@@ -50,7 +52,11 @@ export default function LoginPage() {
       url.searchParams.delete("message");
       window.history.replaceState({}, document.title, url);
     }
-  }, [errorParam, errorMessage]);
+  }, [errorParam, errorMessage, error]);
+
+  const handleOAuthLogin = (provider) => {
+    window.location.href = `${API_BASE_URL}/auth/${provider}`;
+  };
 
   // ✅ Controlled input handler
   const handleChange = (e) => {
@@ -58,16 +64,20 @@ export default function LoginPage() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  // ✅ Validation
+  // Validation
   const validateForm = () => {
-    if (!formData.email.trim()) return setError("Email is required"), false;
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email))
-      return setError("Please enter a valid email address"), false;
+    if (!formData.identifier.trim()) return setError("Email or Username is required"), false;
+    // If it looks like an email, validate format; otherwise allow username
+    if (formData.identifier.includes("@")) {
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.identifier))
+        return setError("Please enter a valid email address"), false;
+    }
     if (!formData.password) return setError("Password is required"), false;
     setError("");
     return true;
   };
 
+  // Submit handler
   // ✅ Submit handler
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -77,23 +87,29 @@ export default function LoginPage() {
     setError("");
 
     try {
-      const response = await fetch(`${API_URL}/auth/login`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
-        body: JSON.stringify({
-          email: formData.email,
+      const tryLogin = async () => {
+        const attempt = async (payload) => {
+          const res = await fetch(`${API_URL}/auth/login`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Accept: "application/json",
+            },
+            body: JSON.stringify(payload),
+          });
+          const data = await res.json().catch(() => ({}));
+          if (!res.ok) throw new Error(data.message || "Login failed");
+          return data;
+        };
+
+        // Send identifier (email or username) to match backend flexibility
+        return await attempt({
+          identifier: formData.identifier.trim(),
           password: formData.password,
-        }),
-      });
+        });
+      };
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || "Login failed");
-      }
+      const data = await tryLogin();
 
       // ✅ Save in context + localStorage
       login(data.user, data.token);
@@ -121,45 +137,7 @@ export default function LoginPage() {
   };
 
   // ✅ Particle background
-  useEffect(() => {
-    const container = document.querySelector(".login-container");
-    const createParticle = () => {
-      const particle = document.createElement("div");
-      const size = Math.random() * 10 + 5;
-      particle.className =
-        "absolute rounded-full bg-gradient-to-r from-purple-400 to-pink-500 opacity-20";
-      particle.style.width = `${size}px`;
-      particle.style.height = `${size}px`;
-      particle.style.left = `${Math.random() * 100}%`;
-      particle.style.top = `${Math.random() * 100}%`;
-      particle.style.animation = `float ${
-        Math.random() * 10 + 10
-      }s linear infinite`;
-      container?.appendChild(particle);
-    };
-    for (let i = 0; i < 15; i++) createParticle();
-
-    return () =>
-      container
-        ?.querySelectorAll("div")
-        .forEach(
-          (el) =>
-            el.style.animation?.includes("float") && container.removeChild(el)
-        );
-  }, []);
-
-  // ✅ Add float animation CSS
-  useEffect(() => {
-    const style = document.createElement("style");
-    style.textContent = `
-      @keyframes float {
-        0% { transform: translateY(0) rotate(0deg); opacity: 1; }
-        100% { transform: translateY(-1000px) rotate(720deg); opacity: 0; }
-      }
-    `;
-    document.head.appendChild(style);
-    return () => document.head.removeChild(style);
-  }, []);
+  useBubbles("login-container", { count: 18, sizeRange: [6, 14], durationRange: [10, 18], opacity: 0.18 });
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 p-4 relative overflow-hidden login-container">
@@ -188,13 +166,14 @@ export default function LoginPage() {
 
           <form className="space-y-5" onSubmit={handleSubmit}>
             <InputField
-              label="Email"
-              name="email"
-              type="email"
-              value={formData.email}
+              label="Email or Username"
+              name="identifier"
+              type="text"
+              value={formData.identifier}
               onChange={handleChange}
-              placeholder="Enter your email"
+              placeholder="Enter your email or username"
               icon={<Mail className="w-5 h-5 text-gray-400" />}
+              autoComplete="username"
             />
             <PasswordField
               label="Password"
@@ -269,7 +248,7 @@ export default function LoginPage() {
 }
 
 // ================== Reusable components ==================
-function InputField({ label, name, value, onChange, placeholder, icon, type = "text" }) {
+function InputField({ label, name, value, onChange, placeholder, icon, type = "text", autoComplete }) {
   return (
     <div>
       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -286,6 +265,7 @@ function InputField({ label, name, value, onChange, placeholder, icon, type = "t
           onChange={onChange}
           required
           placeholder={placeholder}
+          autoComplete={autoComplete}
           className="block w-full pl-10 pr-3 py-3 border border-gray-200 dark:border-gray-700 rounded-xl bg-white/50 dark:bg-gray-700/50 focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
         />
       </div>
@@ -310,6 +290,7 @@ function PasswordField({ label, name, value, onChange, show, setShow }) {
           onChange={onChange}
           required
           placeholder="Enter your password"
+          autoComplete="current-password"
           className="block w-full pl-10 pr-10 py-3 border border-gray-200 dark:border-gray-700 rounded-xl bg-white/50 dark:bg-gray-700/50 focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
         />
         <button
