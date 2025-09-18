@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import {
   Home,
@@ -21,6 +21,7 @@ export default function Sidebar({ isOpen, setIsOpen, scrollToSection, aboutRef, 
   const [isHovered, setIsHovered] = useState(false);
   const { darkMode, toggleDarkMode } = useDarkMode();
   const location = useLocation();
+  const navigate = useNavigate();
   const { user, updateUser } = useContext(UserContext);
 
   const [avatar, setAvatar] = useState(user?.avatar || null);
@@ -31,10 +32,11 @@ export default function Sidebar({ isOpen, setIsOpen, scrollToSection, aboutRef, 
 
   const handleAvatarClick = () => {
     if (!user) {
-      toast.warning("You need to sign in first to change avatar");
+      toast.info("Please sign in to manage your profile");
+      navigate("/login");
       return;
     }
-    document.getElementById("avatarUpload").click();
+    navigate("/settings");
   };
 
   const handleAvatarChange = (e) => {
@@ -113,7 +115,7 @@ export default function Sidebar({ isOpen, setIsOpen, scrollToSection, aboutRef, 
               <span
                 className={`text-lg font-semibold text-gray-800 dark:text-gray-200 ${!sidebarOpen && !isHovered ? "hidden" : "block"}`}
               >
-                {user?.fullName || "Guest User"}
+                {user?.username || user?.fullName || user?.email || "Guest User"}
               </span>
               <input
                 id="avatarUpload"

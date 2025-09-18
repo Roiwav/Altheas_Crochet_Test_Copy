@@ -21,6 +21,7 @@ import OAuthCallback from './pages/auth/OAuthCallback';
 import CheckoutPage from './pages/main/CheckoutPage';
 import UserDashboard from './pages/user/UserDashboard';
 import OrdersPage from './pages/user/OrdersPage';
+import SettingsPage from './pages/user/SettingsPage';
 import ForgotPassword from './pages/auth/ForgotPassword.jsx';
 import DataPolicy from './pages/main/DataPolicy.jsx';
 import ServiceTerm from './pages/main/ServiceTerm.jsx';
@@ -143,6 +144,14 @@ export default function App() {
           <Route path="/faq" element={<FAQPage />} />
           <Route path="/feedback" element={<FeedbackPage />} />
           <Route path="/blog" element={<BlogPage />} />
+          <Route
+            path="/settings"
+            element={
+              <PageLayout>
+                <SettingsPage />
+              </PageLayout>
+            }
+          />
 
           {/* Static Pages */}
           <Route

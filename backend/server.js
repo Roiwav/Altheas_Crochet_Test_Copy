@@ -2,9 +2,11 @@ import express from "express";
 import mongoose from "mongoose";
 import cors from "cors";
 import dotenv from "dotenv";
+import path from "path";
 
 import authRoutes from "./routes/authRoutes.js";
 import cartRoutes from "./routes/cartRoutes.js"; // ✅ make sure file is named cartRoutes.js
+import userRoutes from "./routes/userRoutes.js";
 
 dotenv.config();
 const app = express();
@@ -12,6 +14,8 @@ const app = express();
 // Middleware
 app.use(cors({ origin: "http://localhost:5173", credentials: true }));
 app.use(express.json());
+// Serve static files for uploaded avatars
+app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 
 // MongoDB connection
 mongoose
@@ -25,6 +29,7 @@ mongoose
 // Routes
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/cart", cartRoutes); // ✅ new cart routes
+app.use("/api/v1/users", userRoutes);
 
 // Server listen
 const PORT = process.env.PORT || 5001;
