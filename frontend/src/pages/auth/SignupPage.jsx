@@ -1,9 +1,10 @@
 import { useState, useEffect, useCallback } from "react";
-import { Link, useNavigate, useLocation } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Eye, EyeOff, Loader2, User, Mail, Lock } from "lucide-react";
 import { useUser } from "../../context/useUser";
 import { toast } from "react-toastify";
 import axios from "axios";
+import useBubbles from "../../hooks/useBubbles";
 
 // Axios defaults
 axios.defaults.withCredentials = true;
@@ -12,9 +13,7 @@ const API_URL = `${API_BASE_URL}/api/v1/auth`;
 
 export default function SignUpPage() {
   const navigate = useNavigate();
-  const location = useLocation();
   const { login } = useUser();
-  const from = location.state?.from?.pathname || "/";
 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -115,41 +114,8 @@ export default function SignUpPage() {
     handleOAuthRedirect();
   }, [handleOAuthRedirect]);
 
-  // Floating particles effect
-  useEffect(() => {
-    const createParticle = () => {
-      const particle = document.createElement("div");
-      particle.className =
-        "absolute rounded-full bg-gradient-to-r from-purple-400 to-pink-500 opacity-20";
-      const size = Math.random() * 12 + 5;
-      particle.style.width = `${size}px`;
-      particle.style.height = `${size}px`;
-      particle.style.left = `${Math.random() * 100}%`;
-      particle.style.top = `${Math.random() * 100}%`;
-      particle.style.animation = `float ${Math.random() * 12 + 8}s linear infinite`;
-      document.querySelector(".signup-container")?.appendChild(particle);
-    };
-
-    for (let i = 0; i < 20; i++) createParticle();
-
-    return () => {
-      document.querySelectorAll(".signup-container > div").forEach((el) => {
-        if (el.style.animation?.includes("float")) el.remove();
-      });
-    };
-  }, []);
-
-  useEffect(() => {
-    const style = document.createElement("style");
-    style.textContent = `
-      @keyframes float {
-        0% { transform: translateY(0) rotate(0deg); opacity: 1; }
-        100% { transform: translateY(-1000px) rotate(720deg); opacity: 0; }
-      }
-    `;
-    document.head.appendChild(style);
-    return () => document.head.removeChild(style);
-  }, []);
+  // Bubbles background effect
+  useBubbles("signup-container", { count: 20, sizeRange: [6, 16], durationRange: [10, 20], opacity: 0.18 });
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 p-4 relative overflow-hidden signup-container">

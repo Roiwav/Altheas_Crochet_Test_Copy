@@ -1,14 +1,16 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
+const path = require("path");
 require("dotenv").config();
 
 const authRoutes = require("./routes/authRoutes");
+const userRoutes = require("./routes/userRoutes");
 
 const app = express();
 
 // ✅ Middleware
-app.use(express.json());
+app.use(express.json({ limit: "5mb" }));
 
 // ✅ CORS setup for React frontend
 app.use(
@@ -18,8 +20,12 @@ app.use(
   })
 );
 
+// ✅ Serve static files for uploaded avatars
+app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
+
 // ✅ API Routes
 app.use("/api/v1/auth", authRoutes);
+app.use("/api/v1/users", userRoutes);
 
 // ✅ MongoDB connection
 mongoose
