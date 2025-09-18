@@ -4,9 +4,15 @@ import { useState, useEffect, createContext, useContext } from "react";
 // ✅ Create context
 export const CartContext = createContext();
 
+
+
+// ✅ Hook to use the cart
+export const useCart = () => useContext(CartContext);
+
+// ✅ CartProvider component
 export const CartProvider = ({ children }) => {
+  // Load cart from localStorage on initialization
   const [cartItems, setCartItems] = useState(() => {
-    // Load cart from localStorage if available
     const storedCart = localStorage.getItem("cart");
     return storedCart ? JSON.parse(storedCart) : [];
   });
@@ -16,7 +22,7 @@ export const CartProvider = ({ children }) => {
     localStorage.setItem("cart", JSON.stringify(cartItems));
   }, [cartItems]);
 
-  // ✅ Helper function to get a stable ID (works for id or _id)
+  // ✅ Helper function to get a stable ID (id or _id)
   const getId = (product) => product.id || product._id;
 
   // ✅ Add product to cart
@@ -35,7 +41,7 @@ export const CartProvider = ({ children }) => {
     });
   };
 
-  // ✅ Update quantity
+  // ✅ Update quantity of a specific product
   const updateQuantity = (productId, qty) => {
     if (qty <= 0) {
       removeFromCart(productId);
@@ -48,26 +54,23 @@ export const CartProvider = ({ children }) => {
     }
   };
 
-  // ✅ Remove item
+  // ✅ Remove product from cart
   const removeFromCart = (productId) => {
     setCartItems((prevCart) =>
       prevCart.filter((item) => getId(item) !== productId)
     );
   };
 
-  // ✅ Clear cart
-  const clearCart = () => {
-    setCartItems([]);
-  };
+  // ✅ Clear entire cart
+  const clearCart = () => setCartItems([]);
 
-  // ✅ Total items in cart
+  // ✅ Compute total quantity
   const totalQuantity = cartItems.reduce((sum, item) => sum + item.qty, 0);
 
   return (
     <CartContext.Provider
       value={{
         cartItems,
-        setCartItems,
         addToCart,
         updateQuantity,
         removeFromCart,
@@ -78,9 +81,4 @@ export const CartProvider = ({ children }) => {
       {children}
     </CartContext.Provider>
   );
-};
-
-// ✅ Hook to use cart
-export const useCart = () => {
-  return useContext(CartContext);
 };
