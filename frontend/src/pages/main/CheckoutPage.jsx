@@ -1,18 +1,23 @@
 // src/pages/main/CheckoutPage.jsx
 import { useLocation, useNavigate } from "react-router-dom";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ArrowLeft, ShoppingBag, ShoppingCart } from "lucide-react";
 import { toast } from "react-toastify";
+
+// Merged: Keep both context imports for cart and user
 import { useCart } from "../../context/CartContext.jsx";
+import { useUser } from "../../context/useUser";
 import "react-toastify/dist/ReactToastify.css";
 
 export default function CheckoutPage() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { cartItems, addToCart, updateQuantity, removeFromCart, clearCart } =
-    useCart(); // full cart context
 
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  // Merged: Combine the destructuring from both branches to get all needed cart functions
+  const { cartItems, addToCart, updateQuantity, removeFromCart, clearCart } =
+    useCart();
+  // Merged: Use `isAuthenticated` from the `useUser` context, which is the more robust approach
+  const { isAuthenticated } = useUser?.() || { isAuthenticated: false };
   const toastShown = useRef(false);
 
   // Optional: single product passed from Buy Now
@@ -24,9 +29,7 @@ export default function CheckoutPage() {
 
   // Check user login & redirect if no product (for single buy)
   useEffect(() => {
-    const user = localStorage.getItem("user");
-    setIsLoggedIn(!!user);
-
+    // Merged: Combine the conditions to handle both empty cart and no product
     if (!cartItems.length && !product && !toastShown.current) {
       toastShown.current = true;
       toast.error("Please select a product to checkout.");
@@ -35,7 +38,7 @@ export default function CheckoutPage() {
   }, [cartItems, product, navigate]);
 
   const handlePlaceOrder = () => {
-    if (!isLoggedIn) {
+    if (!isAuthenticated) {
       toast.info("Please login to complete your purchase");
       navigate("/login", {
         state: { from: "checkout" },
@@ -45,12 +48,14 @@ export default function CheckoutPage() {
 
     // For now: just simulate placing order
     toast.success("✅ Order placed successfully!");
+    // Merged: Keep `clearCart` to empty the cart after a successful order
     clearCart();
     navigate("/shop");
   };
 
   const handleAddToCart = (productToAdd) => {
-    if (!isLoggedIn) {
+    // Merged: Use `isAuthenticated` to check login status
+    if (!isAuthenticated) {
       toast.info("Please login to add items to your cart");
       navigate("/login", {
         state: { from: "shop" },
@@ -79,20 +84,21 @@ export default function CheckoutPage() {
   const totalCost = subtotal + (product ? shippingFee : 0);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white to-blue-50 p-6 md:p-12">
-      <div className="max-w-4xl mx-auto bg-white shadow-lg rounded-xl overflow-hidden">
-        <div className="p-6 border-b flex items-center justify-between">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 p-6 md:p-12">
+      <div className="w-full max-w-5xl bg-white/70 dark:bg-gray-800/70 backdrop-blur-lg rounded-2xl shadow-2xl border border-white/20 dark:border-gray-700/50 overflow-hidden">
+        {/* Header */}
+        <div className="px-6 py-5 border-b border-gray-200/70 dark:border-gray-700/70 flex items-center justify-between">
           <button
             onClick={() => navigate(-1)}
-            className="flex items-center gap-2 text-blue-600 hover:text-blue-800"
+            className="inline-flex items-center gap-2 text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
           >
-            <ArrowLeft /> Back to Shop
+            <ArrowLeft className="w-5 h-5" /> Back
           </button>
-          <h2 className="text-xl font-bold text-gray-800">Checkout</h2>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Checkout</h2>
         </div>
 
         <div className="flex flex-col md:flex-row">
-          {/* Product / Cart Items */}
+          {/* Merged: Use the UI that supports both a single product and multiple cart items */}
           <div className="p-6 md:w-1/2 border-r space-y-4">
             {checkoutItems.map((item) => (
               <div
@@ -143,7 +149,7 @@ export default function CheckoutPage() {
               </div>
             ))}
 
-            {/* Single product Buy Now Add to Cart */}
+            {/* Merged: Keep the 'Add to Cart' button for the 'Buy Now' product */}
             {product && !cartItems.includes(product) && (
               <button
                 onClick={() => handleAddToCart(product)}
@@ -178,7 +184,7 @@ export default function CheckoutPage() {
               {product && (
                 <div className="flex justify-between text-gray-600">
                   <span>Shipping Fee</span>
-                  <span>₱{shippingFee}</span>
+                  <span>₱{shippingFee.toLocaleString?.() || shippingFee}</span>
                 </div>
               )}
               <div className="flex justify-between font-bold text-lg mt-2 text-gray-900">
@@ -187,12 +193,22 @@ export default function CheckoutPage() {
               </div>
             </div>
 
-            <div className="flex gap-3 mt-6">
+            <div className="flex flex-col sm:flex-row gap-3 mt-6">
+              {/* Merged: Keep the 'Add to Cart' button logic from `nookie-b` and `Integration-A-B`
+              The logic for `handleAddToCart` is already combined above, so this button will work. */}
+              {product && (
+                <button
+                  onClick={() => handleAddToCart(product)}
+                  className="flex-1 inline-flex items-center justify-center gap-2 bg-white text-gray-800 dark:bg-gray-900 dark:text-gray-200 border border-gray-200 dark:border-gray-700 py-3 rounded-xl text-base font-semibold hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                >
+                  <ShoppingCart className="w-5 h-5" /> Add to Cart
+                </button>
+              )}
               <button
                 onClick={handlePlaceOrder}
-                className="flex-1 bg-green-600 text-white py-3 rounded-lg text-lg font-semibold hover:bg-green-700 transition"
+                className="flex-1 inline-flex items-center justify-center gap-2 bg-pink-600 text-white py-3 rounded-xl text-base font-semibold hover:bg-pink-700 transition-colors"
               >
-                <ShoppingBag className="inline mr-2" /> Place Order
+                <ShoppingBag className="w-5 h-5" /> Place Order
               </button>
             </div>
           </div>

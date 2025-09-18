@@ -1,8 +1,9 @@
 // src/context/UserContext.jsx
-import React, { createContext, useState, useEffect } from "react";
+import React, { createContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const UserContext = createContext();
 
 /**
@@ -33,6 +34,7 @@ export const UserProvider = ({ children }) => {
     return null;
   });
 
+  // eslint-disable-next-line no-unused-vars
   const [isLoading, setIsLoading] = useState(false); // set to false because we restore synchronously
 
   // login(userObject, token, remember = true)
@@ -65,6 +67,10 @@ export const UserProvider = ({ children }) => {
     sessionStorage.removeItem("token");
     toast.success("Logged out");
     navigate("/login");
+    // Force a full page reload to clearly show the reload and fully reset state
+    setTimeout(() => {
+      window.location.reload();
+    }, 0);
   };
 
   const updateUser = (updatedFields) => {
