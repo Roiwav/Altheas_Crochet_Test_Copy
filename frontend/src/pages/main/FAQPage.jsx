@@ -17,7 +17,7 @@ const FAQPage = () => {
       questions: [
         {
           question: 'How long does shipping take?',
-          answer: 'Processing time is 3-5 business days. Shipping typically takes 5-7 business days within the Philippines. International shipping may take 10-20 business days depending on the destination.'
+          answer: 'Processing time is 3-5 business days. Shipping typically takes 5-7 business days within the Philippines.'
         },
         {
           question: 'Do you offer international shipping?',
