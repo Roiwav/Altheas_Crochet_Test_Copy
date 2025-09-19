@@ -5,7 +5,7 @@ import emailIcon from "../../assets/images/icons/email.png";
 import phoneIcon from "../../assets/images/icons/contact.png";
 import locationIcon from "../../assets/images/icons/location.png";
 import fbLogo from "../../assets/images/icons/facebook-logo.png";
-import igLogo from "../../assets/images/icons/instagram-Logo.png";
+import igLogo from "../../assets/images/icons/instagram-logo.png";
 
 export default function Footer() {
   return (
