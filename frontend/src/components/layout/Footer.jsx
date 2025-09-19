@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import emailIcon from "../../assets/images/icons/email.png";
 import phoneIcon from "../../assets/images/icons/contact.png";
 import locationIcon from "../../assets/images/icons/location.png";
-import fbLogo from "../../assets/images/icons/facebook-Logo.png";
+import fbLogo from "../../assets/images/icons/facebook-logo.png";
 import igLogo from "../../assets/images/icons/instagram-Logo.png";
 
 export default function Footer() {
@@ -21,7 +21,7 @@ export default function Footer() {
             </p>
             <div className="flex space-x-4">
               <a
-                href="https://www.facebook.com/share/179eHGNLAr/ q"
+                href="https://www.facebook.com/Teyananana"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="p-2 bg-gray-800 rounded-full hover:bg-pink-500 transition"
@@ -29,7 +29,7 @@ export default function Footer() {
                 <img src={fbLogo} alt="Facebook" className="w-5 h-5" />
               </a>
               <a
-                href="https://www.instagram.com/croshet_bloom?igsh=MWVwYWM4dTFoNnQzNw=="
+                href="https://www.instagram.com/croshet_bloom?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw=="
                 target="_blank"
                 rel="noopener noreferrer"
                 className="p-2 bg-gray-800 rounded-full hover:bg-pink-500 transition"
