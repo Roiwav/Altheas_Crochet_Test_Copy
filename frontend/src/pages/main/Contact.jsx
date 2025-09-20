@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import emailjs from "emailjs-com";
 import Navbar from "../../components/layout/Navbar";
 import Footer from "../../components/layout/Footer";
@@ -14,8 +14,7 @@ export default function ContactPage() {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
-    subject: "",
-    message: "",
+    message: ""
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -31,23 +30,26 @@ export default function ContactPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
-    setSubmitStatus(null);
+
+    // EmailJS config
+    const serviceID = "your_service_id";
+    const templateID = "your_template_id";
+    const userID = "your_user_id";
 
     try {
       await emailjs.send(
-        "service_dq2932e", // Altheascroshet Service ID
-        "template_f7lyis3", // Altheascroshet Template ID
+        serviceID,
+        templateID,
         {
-          name: formData.name,
-          email: formData.email,
-          inquiry_subject: formData.subject,
+          from_name: formData.name,
+          from_email: formData.email,
           message: formData.message,
-        }
+        },
+        userID
       );
       setSubmitStatus('success');
-      setFormData({ name: "", email: "", subject: "", message: "" });
+      setFormData({ name: "", email: "", message: "" });
     } catch (error) {
-      console.error("EmailJS error:", error);
       setSubmitStatus('error');
     }
     setIsSubmitting(false);
@@ -57,11 +59,6 @@ export default function ContactPage() {
 
   // Add sidebar state for Navbar (if needed)
   const [sidebarOpen, setSidebarOpen] = useState(false);
-
-  useEffect(() => {
-    // Initialize EmailJS with your User ID (Public Key)
-    emailjs.init("YXAWeRbfmChLSofYa");
-  }, []);
 
   return (
     <>
@@ -158,25 +155,6 @@ export default function ContactPage() {
                         required
                         className="w-full px-6 py-4 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-pink-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 transition-all duration-300 group-hover:border-pink-300 dark:group-hover:border-pink-600"
                         placeholder="your.email@example.com"
-                      />
-                      <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-pink-500/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
-                    </div>
-                  </div>
-
-                  {/* Subject Field */}
-                  <div className="group">
-                    <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
-                      Subject *
-                    </label>
-                    <div className="relative">
-                      <input
-                        type="text"
-                        name="subject"
-                        value={formData.subject}
-                        onChange={handleChange}
-                        required
-                        className="w-full px-6 py-4 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-pink-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 transition-all duration-300 group-hover:border-pink-300 dark:group-hover:border-pink-600"
-                        placeholder="What is your message about?"
                       />
                       <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-pink-500/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
                     </div>
