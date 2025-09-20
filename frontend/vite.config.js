@@ -35,6 +35,5 @@ export default defineConfig({
     outDir: 'dist',
     assetsDir: 'assets',
     sourcemap: true
-  },
-  base: process.env.VITE_BASE_PATH || "/Altheas_Crochet_Test_Copy"
+  }
 });
